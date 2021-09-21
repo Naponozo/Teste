@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Teste.Models;
+using Negocio.Cadastro;
+using Teste.ViewModel;
 
 namespace Teste.Controllers
 {
@@ -17,20 +19,22 @@ namespace Teste.Controllers
         };
 
         private readonly ILogger<WeatherForecastController> _logger;
-        private readonly WeatherForecastService _service;
+        private readonly IWaeatherForeDbSettings _settings;
 
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, WeatherForecastService service)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWaeatherForeDbSettings settings)
         {
             _logger = logger;
-            _service = service;
+            _settings = settings;
         }
 
 
         [HttpGet("BuscarTodos")]
         public List<WeatherForecast> GetAll()
         {
-            var book = _service.Get();
+            NegWeather negWather = new NegWeather(_settings);
+
+            var book = negWather.Get();
 
             if (book == null)
             {
@@ -43,7 +47,9 @@ namespace Teste.Controllers
         [HttpGet("Buscar")]
         public WeatherForecast Get(string id)
         {
-            var book = _service.Get(id);
+
+            NegWeather negWather = new NegWeather(_settings);
+            var book = negWather.Get(id);
 
             if (book == null)
             {
@@ -54,39 +60,24 @@ namespace Teste.Controllers
         }
 
         [HttpPost("Salvar")]
-        public RetornoAcao<WeatherForecast> Create([FromBody, Required] WeatherForecast a)
+        public RetornoAcao<WeatherForecast> Create([FromBody, Required] WeatherForecastViewModel a)
         {
             RetornoAcao<WeatherForecast> retornoAcao = new RetornoAcao<WeatherForecast>();
             try
             {
-                
-                retornoAcao.Tipo = TipoMensagem.Ok;
-                retornoAcao.MensagemRetorno = "";
+                var b = new WeatherForecast();
+                b.Summary = a.Summary;
+                b.TemperatureC = a.TemperatureC;
 
-                a.Date = DateTime.Now;
-                retornoAcao.Objeto = a;
-
-                var validator = new Validation();
-                var validRes = validator.Validate(a);
-                if (validRes.IsValid)
-                {
-                    retornoAcao.MensagemRetorno = "Salvo com sucesso!";
-                    retornoAcao.Tipo = TipoMensagem.Ok;
-
-                    _service.Create(a);
-                }
-                else
-                {
-                    retornoAcao.MensagemRetorno = validRes.Errors[0].ErrorMessage;
-                    retornoAcao.Tipo = TipoMensagem.Atencao;
-                }
+                NegWeather negWather = new NegWeather(_settings);
+                retornoAcao = negWather.Create(b);
             }
             catch (Exception ex)
             {
-                retornoAcao.MensagemRetorno = "Ocorreu um erro, erro: "+ ex.Message;
+                retornoAcao.MensagemRetorno = "Ocorreu um erro, erro: " + ex.Message;
                 retornoAcao.Tipo = TipoMensagem.Erro;
+                //Salvar Log
             }
-
 
             return retornoAcao;
         }
@@ -94,7 +85,9 @@ namespace Teste.Controllers
         [HttpPut("Alterar")]
         public WeatherForecast Update(string id, string summary, int temperatura)
         {
-            var weatherForecast = _service.Get(id);
+
+            NegWeather negWather = new NegWeather(_settings);
+            var weatherForecast = negWather.Get(id);
             weatherForecast.Summary = summary;
             weatherForecast.TemperatureC = temperatura;
 
@@ -103,7 +96,7 @@ namespace Teste.Controllers
                 return null;
             }
 
-            _service.Update(id, weatherForecast);
+            negWather.Update(id, weatherForecast);
 
             return null;
         }
@@ -111,8 +104,10 @@ namespace Teste.Controllers
         [HttpPut("AlterarCls")]
         public WeatherForecast UpdateCls([FromBody, Required] WeatherForecast a)
         {
-            var weatherForecast = _service.Get(a.Id);
-            weatherForecast.Summary =  a.Summary;
+            NegWeather negWather = new NegWeather(_settings);
+
+            var weatherForecast = negWather.Get(a.Id);
+            weatherForecast.Summary = a.Summary;
             weatherForecast.TemperatureC = a.TemperatureC;
 
             if (weatherForecast == null)
@@ -120,7 +115,7 @@ namespace Teste.Controllers
                 return null;
             }
 
-            _service.UpdateCls(weatherForecast);
+            negWather.UpdateCls(weatherForecast);
 
             return null;
         }
@@ -129,14 +124,16 @@ namespace Teste.Controllers
         [HttpDelete("Apagar")]
         public JsonResult Delete(string id)
         {
-            var book = _service.Get(id);
+            NegWeather negWather = new NegWeather(_settings);
+
+            var book = negWather.Get(id);
 
             if (book == null)
             {
                 return null;
             }
 
-            _service.Remove(book.Id);
+            negWather.Remove(book.Id);
 
             return null;
         }

@@ -1,18 +1,20 @@
-﻿using MongoDB.Driver;
+﻿using FluentValidation;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Teste;
 using Teste.Models;
 
-namespace Teste
+namespace Negocio.Cadastro
 {
-    public class WeatherForecastService
+    public class NegWeather
     {
-
         private readonly IMongoCollection<WeatherForecast> _books;
 
-        public WeatherForecastService(IWaeatherForeDbSettings settings)
+        public NegWeather(IWaeatherForeDbSettings settings)
         {
             var client = new MongoClient(settings.ConnectionString);
             var database = client.GetDatabase(settings.DatabaseName);
@@ -26,10 +28,30 @@ namespace Teste
         public WeatherForecast Get(string id) =>
             _books.Find<WeatherForecast>(book => book.Id == id).FirstOrDefault();
 
-        public WeatherForecast Create(WeatherForecast book)
+        public RetornoAcao<WeatherForecast> Create(WeatherForecast a)
         {
-            _books.InsertOne(book);
-            return book;
+            RetornoAcao<WeatherForecast> retornoAcao = new RetornoAcao<WeatherForecast>();
+            retornoAcao.Tipo = TipoMensagem.Ok;
+            retornoAcao.MensagemRetorno = "";
+
+            var validator = new WeatherForecastValidation();
+            var validRes = validator.Validate(a);
+            if (validRes.IsValid)
+            {
+                retornoAcao.MensagemRetorno = "Salvo com sucesso!";
+                retornoAcao.Tipo = TipoMensagem.Ok;
+
+                a.Date = DateTime.Now;
+                _books.InsertOne(a);  
+            }
+            else
+            {
+                retornoAcao.MensagemRetorno = validRes.Errors[0].ErrorMessage;
+                retornoAcao.Tipo = TipoMensagem.Atencao;
+            }
+
+            retornoAcao.Objeto = a;
+            return retornoAcao;
         }
 
         public void Update(string id, WeatherForecast a) =>

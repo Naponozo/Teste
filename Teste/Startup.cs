@@ -29,7 +29,7 @@ namespace Teste
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<WaeatherForeDbSettings>(Configuration.GetSection(nameof(WaeatherForeDbSettings)));
-            services.AddSingleton<WeatherForecastService>();
+            services.AddSingleton<Negocio.Cadastro.NegWeather>();
             services.AddSingleton<IWaeatherForeDbSettings>(sp => sp.GetRequiredService<IOptions<WaeatherForeDbSettings>>().Value);
 
             services.AddControllers();
