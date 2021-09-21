@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Teste.AutoMapper;
 using Teste.Models;
 
 namespace Teste
@@ -40,6 +41,7 @@ namespace Teste
 
             services.AddSwaggerGen();
 
+            services.AddAutoMapper(typeof(AutoMapperSetup));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

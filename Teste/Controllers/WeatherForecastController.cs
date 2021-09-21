@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Teste.Models;
 using Negocio.Cadastro;
 using Teste.ViewModel;
+using AutoMapper;
 
 namespace Teste.Controllers
 {
@@ -20,10 +21,11 @@ namespace Teste.Controllers
 
         private readonly ILogger<WeatherForecastController> _logger;
         private readonly IWaeatherForeDbSettings _settings;
+        private readonly IMapper _mapper;
 
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWaeatherForeDbSettings settings)
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWaeatherForeDbSettings settings, IMapper mapper)
         {
+            _mapper = mapper;
             _logger = logger;
             _settings = settings;
         }
@@ -65,12 +67,14 @@ namespace Teste.Controllers
             RetornoAcao<WeatherForecast> retornoAcao = new RetornoAcao<WeatherForecast>();
             try
             {
-                var b = new WeatherForecast();
-                b.Summary = a.Summary;
-                b.TemperatureC = a.TemperatureC;
+                WeatherForecast weatherForecast = _mapper.Map<WeatherForecast>(a);
+
+                //var b = new WeatherForecast();
+                //b.Summary = a.Summary;
+                //b.TemperatureC = a.TemperatureC;
 
                 NegWeather negWather = new NegWeather(_settings);
-                retornoAcao = negWather.Create(b);
+                retornoAcao = negWather.Create(weatherForecast);
             }
             catch (Exception ex)
             {
