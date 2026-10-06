@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Entidade.Models;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Negocio.Cadastro;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Teste.Models;
-using Negocio.Cadastro;
 using Teste.ViewModel;
-using AutoMapper;
 
 namespace Teste.Controllers
 {
@@ -23,11 +24,14 @@ namespace Teste.Controllers
         private readonly IWaeatherForeDbSettings _settings;
         private readonly IMapper _mapper;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWaeatherForeDbSettings settings, IMapper mapper)
+        private readonly PedidoService _pedidoService;
+
+        public WeatherForecastController(ILogger<WeatherForecastController> logger, IWaeatherForeDbSettings settings, IMapper mapper, PedidoService pedidoService)
         {
             _mapper = mapper;
             _logger = logger;
             _settings = settings;
+            _pedidoService = pedidoService;
         }
 
 
@@ -140,6 +144,12 @@ namespace Teste.Controllers
             negWather.Remove(book.Id);
 
             return null;
+        }
+
+        [HttpPost("CriarPedido")]
+        public IActionResult CriarPedido()
+        {         
+            return Ok(_pedidoService.CriarPedido());
         }
     }
 }

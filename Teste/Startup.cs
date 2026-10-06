@@ -1,3 +1,5 @@
+using Entidade.Interface;
+using Entidade.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -32,6 +34,10 @@ namespace Teste
             services.Configure<WaeatherForeDbSettings>(Configuration.GetSection(nameof(WaeatherForeDbSettings)));
             services.AddSingleton<Negocio.Cadastro.NegWeather>();
             services.AddSingleton<IWaeatherForeDbSettings>(sp => sp.GetRequiredService<IOptions<WaeatherForeDbSettings>>().Value);
+
+            services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped<PedidoService>();
+
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
